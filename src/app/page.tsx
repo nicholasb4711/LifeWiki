@@ -1,11 +1,11 @@
-import Image from "next/image";
+import Hello from "../app/components/hello";
 
 export default function Home() {
   return (
     <div>
       <h1>Home Page1</h1>
       {/* Link to dashboard page */}
-      <a href="/dashboard">Dashboard</a>
+      <Hello />
     </div>
   )
 }
