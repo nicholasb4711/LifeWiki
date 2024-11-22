@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { auth, signOut } from '../../../auth'
+import { auth, signOut } from '@/lib/auth/config'
 
 const Navbar = async () => {
     const session = await auth()
