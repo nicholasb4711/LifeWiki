@@ -44,7 +44,7 @@ export function SearchBar({ defaultQuery = "", defaultSort = "updated_at", defau
       <div className="flex gap-2">
         <div className="flex-1">
           <Input
-            placeholder="Search wikis..."
+            placeholder="Search for a wiki or page..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full"
