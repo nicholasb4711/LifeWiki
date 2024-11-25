@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-export default async function WikisPage() {
+export default async function MyWikisPage() {
   const supabase = await createClient();
 
   // Check authentication
@@ -14,10 +14,11 @@ export default async function WikisPage() {
     redirect("/sign-in");
   }
 
-  // Fetch wikis
+  // Fetch only user's wikis
   const { data: wikis, error } = await supabase
     .from('wikis')
     .select('*')
+    .eq('user_id', user.id)
     .order('updated_at', { ascending: false });
 
   if (error) {
@@ -28,7 +29,7 @@ export default async function WikisPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">All Wikis</h1>
+        <h1 className="text-3xl font-bold">My Wikis</h1>
         <Button asChild>
           <Link href="/wikis/new">
             <Plus className="h-4 w-4 mr-2" />
@@ -59,4 +60,4 @@ export default async function WikisPage() {
       )}
     </div>
   );
-}
+} 

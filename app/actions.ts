@@ -132,3 +132,40 @@ export const signOutAction = async () => {
   await supabase.auth.signOut();
   return redirect("/sign-in");
 };
+
+
+'use server'
+
+export async function createWikiAction(formData: FormData) {
+  const supabase = await createClient();
+
+  // check if user is authenticated
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  // create wiki
+  const title = formData.get("title")?.toString();
+  const description = formData.get("description")?.toString();
+  const isPublic = formData.get("isPublic")?.toString() === "true";
+
+  if (!title) {
+    return { error: "Title is required" };
+  }
+
+  // insert wiki into database
+  const { data: wiki, error } = await supabase.from("wikis").insert({
+    title,
+    description,
+    is_public: isPublic,
+    user_id: user.id,
+  }).select().single();
+
+  if (error) {
+    console.error('error creating wiki', error);
+    return { error: "Failed to create wiki" };
+  }
+
+  redirect(`/wikis/${wiki.id}`);
+}

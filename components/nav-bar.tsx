@@ -29,7 +29,7 @@ export async function NavBar() {
                 All Wikis
               </Link>
               <Link 
-                href="/wikis" 
+                href="/wikis/my-wikis" 
                 className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"
               >
                 <FolderOpen className="h-4 w-4" />
