@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/utils/supabase/server"
 import { formatDate } from "@/lib/utils"
-import { Settings } from "lucide-react"
+import { InfoIcon, Settings } from "lucide-react"
 import Link from "next/link"
 
 export default async function ProfilePage() {
@@ -23,6 +23,11 @@ export default async function ProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+        <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
+          <InfoIcon size="16" strokeWidth={2} />
+          This is a protected page that you can only see as an authenticated
+          user
+        </div>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl sm:text-3xl font-bold">Profile</h1>
         <Link href="/settings">
