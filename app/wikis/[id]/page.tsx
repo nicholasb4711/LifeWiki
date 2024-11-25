@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, FileText, FolderIcon, Plus } from "lucide-react";
+import { ArrowLeft, FileText, Plus } from "lucide-react";
 import { BackButton } from "@/components/back-button"
 
 interface WikiPageProps {
@@ -28,12 +28,12 @@ export default async function WikiPage(props: WikiPageProps) {
     notFound();
   }
 
-  // Fetch wiki pages (you'll need to create this table)
+  // Fetch pages with user information
   const { data: pages } = await supabase
-    .from("wiki_pages")
+    .from("pages")
     .select("*")
     .eq("wiki_id", wikiId)
-    .order("created_at", { ascending: true });
+    .order("updated_at", { ascending: false });
 
   return (
     <div className="max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-8">
@@ -67,7 +67,7 @@ export default async function WikiPage(props: WikiPageProps) {
           </CardHeader>
           <CardContent>
             <nav className="space-y-2">
-              {pages?.length === 0 ? (
+              {!pages?.length ? (
                 <p className="text-sm text-muted-foreground">No pages yet</p>
               ) : (
                 pages?.map((page) => (
@@ -115,9 +115,12 @@ export default async function WikiPage(props: WikiPageProps) {
                       <FileText className="h-4 w-4 text-muted-foreground" />
                       <span>{page.title}</span>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(page.created_at).toLocaleDateString()}
-                    </span>
+                    <div className="text-sm text-muted-foreground">
+                      <span>Updated: {new Date(page.updated_at).toLocaleDateString()}</span>
+                      {page.updater?.email && (
+                        <span className="ml-2">by {page.updater.email}</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
