@@ -134,7 +134,7 @@ export const signOutAction = async () => {
 };
 
 
-'use server'
+
 
 export async function createWikiAction(formData: FormData) {
   const supabase = await createClient();
