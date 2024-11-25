@@ -7,15 +7,16 @@ import { ArrowLeft, FileText, FolderIcon, Plus } from "lucide-react";
 import { BackButton } from "@/components/back-button"
 
 interface WikiPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export default async function WikiPage({ params }: WikiPageProps) {
+export default async function WikiPage(props: WikiPageProps) {
+  const params = await props.params;
   const supabase = await createClient();
   const wikiId = await Promise.resolve(params.id);
-  
+
   // Fetch wiki details
   const { data: wiki, error } = await supabase
     .from("wikis")
