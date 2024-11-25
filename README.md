@@ -10,11 +10,13 @@ A modern, collaborative wiki platform built with Next.js 14, Supabase, and TypeS
 - **Tailwind CSS** - Utility-first CSS framework
 - **Lucide Icons** - Modern icon set
 - **shadcn/ui** - Reusable component library
+- **@tailwindcss/typography** - Typography styling for content
 
 ### Backend & Database
 - **Supabase** - PostgreSQL database and authentication
 - **Server Actions** - Next.js server-side mutations
 - **Server Components** - React server components for improved performance
+- **Row Level Security** - Database-level access control
 
 ### Authentication
 - Email/Password authentication
@@ -36,13 +38,22 @@ A modern, collaborative wiki platform built with Next.js 14, Supabase, and TypeS
   - Public/Private wiki toggle
   - Wiki directory structure
   - Basic wiki metadata (title, description)
+  - View all wikis owned by user
+
+- **Page Management**
+  - Create new pages within wikis
+  - Edit existing pages
+  - View page content
+  - Page history tracking
+  - Recent activity display
+  - Directory navigation
 
 ### In Progress
-- **Wiki Pages**
-  - Create and edit wiki pages
+- **Content Enhancement**
+  - Rich text editing
   - Markdown support
-  - Page hierarchy
-  - Page versioning
+  - File attachments
+  - Image uploads
 
 ### Planned Features
 - **Collaboration**
@@ -52,10 +63,10 @@ A modern, collaborative wiki platform built with Next.js 14, Supabase, and TypeS
   - Wiki sharing
 
 - **Content Management**
-  - File attachments
-  - Image uploads
   - Search functionality
   - Tags and categories
+  - Page templates
+  - Version history
 
 - **User Interface**
   - Dark mode support
@@ -68,7 +79,23 @@ A modern, collaborative wiki platform built with Next.js 14, Supabase, and TypeS
 ### Current Tables
 - `users` - User information (managed by Supabase Auth)
 - `wikis` - Wiki metadata and settings
-- `wiki_pages` - Individual wiki pages and content
+  - id
+  - title
+  - description
+  - is_public
+  - user_id
+  - created_at
+  - updated_at
+
+- `pages` - Wiki pages and content
+  - id
+  - wiki_id
+  - title
+  - text
+  - created_by
+  - updated_by
+  - inserted_at
+  - updated_at
 
 ## Getting Started
 
