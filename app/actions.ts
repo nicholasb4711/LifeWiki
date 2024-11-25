@@ -166,3 +166,133 @@ export const createWikiAction = async (formData: FormData) => {
 
   return encodedRedirect("success", `/wikis/${wiki.id}`, "Wiki created successfully");
 }
+
+export const createPageAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  const wikiId = formData.get("wikiId")?.toString();
+  const title = formData.get("title")?.toString();
+  const text = formData.get("text")?.toString();
+
+  if (!wikiId || !title || !text) {
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/pages/new`,
+      "All fields are required"
+    );
+  }
+
+  // Verify user owns the wiki
+  const { data: wiki } = await supabase
+    .from("wikis")
+    .select("user_id")
+    .eq("id", wikiId)
+    .single();
+
+  if (!wiki || wiki.user_id !== user.id) {
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/pages/new`,
+      "You don't have permission to create pages in this wiki"
+    );
+  }
+
+  // Insert the page
+  const { data: page, error } = await supabase
+    .from("pages")
+    .insert({
+      wiki_id: wikiId,
+      title,
+      text,
+      created_by: user.id,
+      updated_by: user.id
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating page:", error);
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/pages/new`,
+      "Failed to create page"
+    );
+  }
+
+  return encodedRedirect(
+    "success",
+    `/wikis/${wikiId}/pages/${page.id}`,
+    "Page created successfully"
+  );
+};
+
+export const updatePageAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  const wikiId = formData.get("wikiId")?.toString();
+  const pageId = formData.get("pageId")?.toString();
+  const title = formData.get("title")?.toString();
+  const text = formData.get("text")?.toString();
+
+  if (!wikiId || !pageId || !title || !text) {
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/pages/${pageId}/edit`,
+      "All fields are required"
+    );
+  }
+
+  // Verify user owns the wiki
+  const { data: wiki } = await supabase
+    .from("wikis")
+    .select("user_id")
+    .eq("id", wikiId)
+    .single();
+
+  if (!wiki || wiki.user_id !== user.id) {
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/pages/${pageId}/edit`,
+      "You don't have permission to edit this page"
+    );
+  }
+
+  // Update the page
+  const { error } = await supabase
+    .from("pages")
+    .update({
+      title,
+      text,
+      updated_by: user.id,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", pageId)
+    .eq("wiki_id", wikiId);
+
+  if (error) {
+    console.error("Error updating page:", error);
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/pages/${pageId}/edit`,
+      "Failed to update page"
+    );
+  }
+
+  return encodedRedirect(
+    "success",
+    `/wikis/${wikiId}/pages/${pageId}`,
+    "Page updated successfully"
+  );
+};
