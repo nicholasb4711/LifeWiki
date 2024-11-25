@@ -1,18 +1,19 @@
 import { createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { WikiCard } from "@/components/wiki-card"
 import { SearchBar } from "@/components/search-bar"
 
 interface SearchPageProps {
-  searchParams: {
+  searchParams: Promise<{
     q?: string
     sort?: 'title' | 'updated_at' | 'created_at'
     order?: 'asc' | 'desc'
-  }
+  }>
 }
 
-export default async function SearchPage({ searchParams }: SearchPageProps) {
+export default async function SearchPage(props: SearchPageProps) {
+  const searchParams = await props.searchParams;
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
