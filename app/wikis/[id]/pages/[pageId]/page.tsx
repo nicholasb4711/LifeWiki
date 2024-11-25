@@ -5,6 +5,7 @@ import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Edit } from "lucide-react";
+import { Markdown } from "@/components/markdown";
 
 interface PageViewProps {
   params: Promise<{
@@ -70,9 +71,7 @@ export default async function PageView(props: PageViewProps) {
           Last updated: {new Date(page.updated_at).toLocaleDateString()}
         </div>
         
-        <div className="whitespace-pre-wrap">
-          {page.text}
-        </div>
+        <Markdown content={page.text} />
       </article>
     </div>
   );

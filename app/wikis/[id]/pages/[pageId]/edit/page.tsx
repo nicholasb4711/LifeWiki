@@ -5,11 +5,11 @@ import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { updatePageAction } from "@/app/actions";
 import { FormMessage } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
+import { MarkdownEditor } from "@/components/markdown-editor";
 
 interface EditPageProps {
   params: Promise<{
@@ -61,7 +61,7 @@ export default async function EditPage(props: EditPageProps) {
           <form action={updatePageAction} className="space-y-6">
             <FormMessage message={{
               success: ""
-            }} />
+            }}/>
             <input type="hidden" name="wikiId" value={wikiId} />
             <input type="hidden" name="pageId" value={pageId} />
 
@@ -78,11 +78,10 @@ export default async function EditPage(props: EditPageProps) {
 
             <div className="space-y-2">
               <Label htmlFor="text">Content</Label>
-              <Textarea
+              <MarkdownEditor
                 id="text"
                 name="text"
                 placeholder="Write your content here..."
-                rows={15}
                 required
                 defaultValue={page.text}
               />

@@ -10,6 +10,7 @@ import Link from "next/link";
 import { createPageAction } from "@/app/actions";
 import { FormMessage } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
+import { MarkdownEditor } from "@/components/markdown-editor"
 
 interface NewPageProps {
   params: Promise<{
@@ -66,11 +67,10 @@ export default async function NewPage(props: NewPageProps) {
 
             <div className="space-y-2">
               <Label htmlFor="text">Content</Label>
-              <Textarea
+              <MarkdownEditor
                 id="text"
                 name="text"
                 placeholder="Write your content here..."
-                rows={15}
                 required
               />
             </div>
