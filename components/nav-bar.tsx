@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/server";
-import { FolderOpen, Search, Settings } from "lucide-react";
+import { FolderOpen, Search, Settings, User } from "lucide-react";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { signOutAction } from "@/app/actions";
 
@@ -50,11 +50,13 @@ export async function NavBar() {
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              <Link href="/settings">
-                <Button variant="ghost" size="sm">
-                  <Settings className="h-4 w-4" />
-                  <span className="sr-only">Settings</span>
-                </Button>
+              
+              <Link 
+                href="/profile" 
+                className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"
+              >
+                <User className="h-4 w-4" />
+                Profile
               </Link>
               <form action={signOutAction}>
                 <Button variant="outline" size="sm">
