@@ -50,7 +50,7 @@ export function SearchBar({ defaultQuery = "", defaultSort = "updated_at", defau
             className="w-full"
           />
         </div>
-        <Button type="submit" variant="secondary">
+        <Button type="submit" variant="default" className="hover:bg-primary dark:hover:bg-primary-500/80 scale-100 transition-colors hover:scale-105 transition-transform duration-200">
           <Search className="h-4 w-4 mr-2" />
           Search
         </Button>
@@ -70,8 +70,9 @@ export function SearchBar({ defaultQuery = "", defaultSort = "updated_at", defau
 
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           size="icon"
+          className="hover:bg-primary-100/80 dark:hover:bg-primary-500/80 transition-colors"
           onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
         >
           {order === 'asc' ? (
