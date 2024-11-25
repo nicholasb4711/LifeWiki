@@ -6,7 +6,7 @@ export default async function Index() {
   return (
     <div className="flex flex-col gap-8 pb-8">
       {/* Hero Section */}
-      <section className="px-4 py-16 mx-auto text-center lg:py-32 bg-gradient-to-b from-primary/5 via-primary/5 to-transparent">
+      <section className="px-4 w-full rounded-lg py-16 mx-auto text-center lg:py-32 bg-gradient-to-b from-primary/5 via-primary/5 to-transparent">
         <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6">
           Your Digital Life, Organized
         </h1>

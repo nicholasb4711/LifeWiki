@@ -27,10 +27,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="min-h-screen flex flex-col items-center">
+          <main className="min-h-screen flex flex-col items-center bg-gradient-to-b from-primary/5 via-primary/5 to-transparent">
             <div className="flex-1 w-full flex flex-col gap-20 items-center">
               <NavBar />
-              <div className="flex flex-col gap-20 max-w-7xl p-5 w-full">
+              <div className="flex flex-col gap-20 max-w-7xl p-5 w-full ">
                 {children}
               </div>
 
