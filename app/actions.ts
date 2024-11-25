@@ -134,9 +134,7 @@ export const signOutAction = async () => {
 };
 
 
-
-
-export async function createWikiAction(formData: FormData) {
+export const createWikiAction = async (formData: FormData) => {
   const supabase = await createClient();
 
   // check if user is authenticated
@@ -145,13 +143,12 @@ export async function createWikiAction(formData: FormData) {
     redirect("/sign-in");
   }
 
-  // create wiki
   const title = formData.get("title")?.toString();
   const description = formData.get("description")?.toString();
   const isPublic = formData.get("isPublic")?.toString() === "true";
 
   if (!title) {
-    return { error: "Title is required" };
+    return encodedRedirect("error", "/wikis/new", "Title is required");
   }
 
   // insert wiki into database
@@ -164,8 +161,8 @@ export async function createWikiAction(formData: FormData) {
 
   if (error) {
     console.error('error creating wiki', error);
-    return { error: "Failed to create wiki" };
+    return encodedRedirect("error", "/wikis/new", "Failed to create wiki");
   }
 
-  redirect(`/wikis/${wiki.id}`);
+  return encodedRedirect("success", `/wikis/${wiki.id}`, "Wiki created successfully");
 }
