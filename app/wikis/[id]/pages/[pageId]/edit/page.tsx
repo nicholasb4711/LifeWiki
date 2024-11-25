@@ -51,14 +51,19 @@ export default async function EditPage(props: EditPageProps) {
 
   return (
     <div className="max-w-4xl mx-auto w-full p-4 sm:p-6 space-y-8">
-      <BackButton label={`Back to ${page.title}`} />
+      <div className="flex items-center justify-between">
+        <BackButton label={`Back to ${page.title}`} />
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit Page</CardTitle>
+      <Card className="shadow-sm">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl">Edit Page</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Make changes to your page content
+          </p>
         </CardHeader>
         <CardContent>
-          <form action={updatePageAction} className="space-y-6">
+          <form action={updatePageAction} className="space-y-8">
             <FormMessage message={{
               success: ""
             }}/>
@@ -66,28 +71,31 @@ export default async function EditPage(props: EditPageProps) {
             <input type="hidden" name="pageId" value={pageId} />
 
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title" className="text-base">Title</Label>
               <Input
                 id="title"
                 name="title"
                 placeholder="Enter page title"
                 required
                 defaultValue={page.title}
+                className="text-lg"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="text">Content</Label>
-              <MarkdownEditor
-                id="text"
-                name="text"
-                placeholder="Write your content here..."
-                required
-                defaultValue={page.text}
-              />
+              <Label htmlFor="text" className="text-base">Content</Label>
+              <div className="rounded-lg bg-card shadow-sm">
+                <MarkdownEditor
+                  id="text"
+                  name="text"
+                  placeholder="Write your content here..."
+                  required
+                  defaultValue={page.text}
+                />
+              </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 pt-4">
               <SubmitButton>Update Page</SubmitButton>
               <Button variant="outline" asChild>
                 <Link href={`/wikis/${wikiId}/pages/${pageId}`}>Cancel</Link>
