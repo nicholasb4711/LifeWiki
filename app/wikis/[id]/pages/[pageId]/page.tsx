@@ -5,6 +5,7 @@ import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Edit } from "lucide-react";
+import { Markdown } from "@/components/markdown";
 
 interface PageViewProps {
   params: Promise<{
@@ -51,7 +52,7 @@ export default async function PageView(props: PageViewProps) {
   const { page, isOwner } = await getPage(wikiId, pageId);
 
   return (
-    <div className="max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-8">
+    <div className="max-w-4xl mx-auto w-full p-4 sm:p-6 space-y-8">
       <div className="flex items-center justify-between">
         <BackButton label={`Back to ${page.wiki.title}`} />
         {isOwner && (
@@ -65,13 +66,15 @@ export default async function PageView(props: PageViewProps) {
       </div>
 
       <article className="prose prose-stone dark:prose-invert max-w-none">
-        <h1 className="text-3xl font-bold tracking-tight mb-4">{page.title}</h1>
-        <div className="text-sm text-muted-foreground mb-8">
-          Last updated: {new Date(page.updated_at).toLocaleDateString()}
+        <div className="not-prose mb-8">
+          <h1 className="scroll-m-20 text-4xl font-bold tracking-tight">{page.title}</h1>
+          <div className="text-sm text-muted-foreground mt-2 flex items-center gap-2">
+            <span>Last updated: {new Date(page.updated_at).toLocaleDateString()}</span>
+          </div>
         </div>
         
-        <div className="whitespace-pre-wrap">
-          {page.text}
+        <div className="rounded-lg bg-card p-6 shadow-sm border">
+          <Markdown content={page.text} />
         </div>
       </article>
     </div>

@@ -1,12 +1,55 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, Share2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/utils/supabase/server";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default async function Index() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Get user's wikis count if logged in
+  let wikisCount = 0;
+  if (user) {
+    const { count } = await supabase
+      .from('wikis')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+    wikisCount = count || 0;
+  }
+
   return (
     <div className="flex flex-col gap-8 pb-8">
+      {/* Welcome Message - Only shown for logged in users */}
+      {user && (
+        <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-none shadow-none">
+          <CardContent className="p-6">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold">
+                Welcome{user.email ? `, ${user.email.split('@')[0]}` : ''}!
+              </h2>
+              <p className="text-muted-foreground">
+                {wikisCount > 0 ? (
+                  <>You have {wikisCount} wiki{wikisCount === 1 ? '' : 's'} in your collection.</>
+                ) : (
+                  "Ready to start organizing? Create your first wiki to begin."
+                )}
+              </p>
+              {wikisCount === 0 && (
+                <Button asChild variant="outline" className="mt-4">
+                  <Link href="/wikis/new">
+                    Create Your First Wiki
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Hero Section */}
-      <section className="px-4 py-16 mx-auto text-center lg:py-32 bg-gradient-to-b from-primary/5 via-primary/5 to-transparent">
+      <section className="px-4 w-full rounded-lg py-8 mx-auto text-center lg:py-28 bg-gradient-to-b from-primary/5 via-primary/5 to-transparent">
         <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6">
           Your Digital Life, Organized
         </h1>
@@ -16,19 +59,21 @@ export default async function Index() {
         </p>
         <div className="mt-10 flex items-center justify-center gap-x-6">
           <Button asChild size="lg">
-            <Link href="/sign-up">
-              Get Started
+            <Link href={user ? "/wikis/new" : "/sign-up"}>
+              {user ? "Create New Wiki" : "Get Started"}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
           <Button variant="outline" size="lg" asChild>
-            <Link href="/about">Learn more</Link>
+            <Link href={user ? "/wikis" : "/about"}>
+              {user ? "View Wikis" : "Learn more"}
+            </Link>
           </Button>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-16">
+      <section className="py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             <FeatureCard
@@ -72,3 +117,4 @@ function FeatureCard({
     </div>
   );
 }
+

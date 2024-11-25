@@ -74,7 +74,7 @@ export default async function WikiPage(props: WikiPageProps) {
                   <Link
                     key={page.id}
                     href={`/wikis/${wikiId}/pages/${page.id}`}
-                    className="flex items-center gap-2 p-2 rounded-md hover:bg-accent text-sm group"
+                    className="flex items-center gap-2 p-2 rounded-md hover:bg-primary-300/50 dark:hover:bg-primary-500/20 hover:border hover:border-primary text-sm group transition-colors"
                   >
                     <FileText className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                     <span className="truncate">{page.title}</span>
