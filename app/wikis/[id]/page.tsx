@@ -1,10 +1,12 @@
 import { createClient } from "@/utils/supabase/server";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, FileText, Plus } from "lucide-react";
+import { ArrowLeft, FileText, Plus, Trash2 } from "lucide-react";
 import { BackButton } from "@/components/back-button"
+import { deleteWikiAction } from "@/app/actions";
+import { ConfirmationDialog } from "@/components/confirmation-dialog"
 
 interface WikiPageProps {
   params: Promise<{
@@ -17,6 +19,12 @@ export default async function WikiPage(props: WikiPageProps) {
   const supabase = await createClient();
   const wikiId = await Promise.resolve(params.id);
 
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/sign-in");
+  }
+
   // Fetch wiki details
   const { data: wiki, error } = await supabase
     .from("wikis")
@@ -28,12 +36,27 @@ export default async function WikiPage(props: WikiPageProps) {
     notFound();
   }
 
+  // Check if user is owner
+  const isOwner = wiki.user_id === user.id;
+
+  // Check if user can access (is owner or wiki is public)
+  if (!isOwner && !wiki.is_public) {
+    redirect("/wikis");
+  }
+
   // Fetch pages with user information
   const { data: pages } = await supabase
     .from("pages")
     .select("*")
     .eq("wiki_id", wikiId)
     .order("updated_at", { ascending: false });
+
+  const deleteWikiWithId = async () => {
+    "use server"
+    const formData = new FormData()
+    formData.append("wikiId", wikiId)
+    return deleteWikiAction(formData)
+  }
 
   return (
     <div className="max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-8">
@@ -46,12 +69,21 @@ export default async function WikiPage(props: WikiPageProps) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">{wiki.title}</h1>
-          <Button asChild>
-            <Link href={`/wikis/${wikiId}/pages/new`}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Page
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            {isOwner && (
+              <ConfirmationDialog
+                title="Delete Wiki"
+                description="Are you sure you want to delete this wiki? This action cannot be undone and will delete all pages within this wiki."
+                action={deleteWikiWithId}
+              />
+            )}
+            <Button asChild size="sm">
+              <Link href={`/wikis/${wikiId}/pages/new`}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Page
+              </Link>
+            </Button>
+          </div>
         </div>
         {wiki.description && (
           <p className="text-muted-foreground">{wiki.description}</p>
@@ -93,8 +125,10 @@ export default async function WikiPage(props: WikiPageProps) {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Welcome to your new wiki! Get started by creating your first page
-                using the "New Page" button above.
+                {pages?.length === 0 
+                  ? "Welcome to this wiki! Get started by creating your first page using the \"New Page\" button above."
+                  : "Select a page from the directory to start reading, or create a new page using the \"New Page\" button above."
+                }
               </p>
             </CardContent>
           </Card>
