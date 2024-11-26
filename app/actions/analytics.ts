@@ -40,17 +40,25 @@ export async function getWikiAnalytics(wikiId: string) {
 
   if (!user) return null;
 
-  // Get total views
+  // First get all page IDs for this wiki
+  const { data: pages } = await supabase
+    .from('pages')
+    .select('id')
+    .eq('wiki_id', wikiId);
+
+  const pageIds = pages?.map(page => page.id) || [];
+
+  // Get total views for all pages in the wiki
   const { count: totalViews } = await supabase
     .from('page_views')
     .select('*', { count: 'exact' })
-    .eq('wiki_id', wikiId);
+    .in('page_id', pageIds);
 
-  // Get unique viewers
+  // Get unique viewers for the wiki
   const { count: uniqueViewers } = await supabase
     .from('page_views')
     .select('viewer_id', { count: 'exact', head: true })
-    .eq('wiki_id', wikiId)
+    .in('page_id', pageIds)
     .not('viewer_id', 'is', null);
 
   // Get views over time (last 30 days)
@@ -60,7 +68,7 @@ export async function getWikiAnalytics(wikiId: string) {
   const { data: dailyViews } = await supabase
     .from('page_views')
     .select('viewed_at')
-    .eq('wiki_id', wikiId)
+    .in('page_id', pageIds)
     .gte('viewed_at', thirtyDaysAgo.toISOString());
 
   // Format daily views for chart
@@ -75,26 +83,26 @@ export async function getWikiAnalytics(wikiId: string) {
     views,
   }));
 
-  // Get most viewed pages with count
-  const { data: mostViewedPages } = await supabase
+  // Get most viewed pages
+  const { data: pagesWithViews } = await supabase
     .from('pages')
     .select(`
       id,
       title,
       wiki_id,
-      view_count:page_views(count)
+      views:page_views(count)
     `)
-    .eq('wiki_id', wikiId)
-    .order('view_count', { ascending: false })
-    .limit(5);
+    .eq('wiki_id', wikiId);
 
-  // Transform the data to match the expected format
-  const formattedPages = mostViewedPages?.map(page => ({
+  // Transform and sort pages by view count
+  const formattedPages = pagesWithViews?.map(page => ({
     id: page.id,
     title: page.title,
     wiki_id: page.wiki_id,
-    views: page.view_count?.[0]?.count || 0 // Extract the count from the array
-  })) || [];
+    views: page.views.length || 0
+  }))
+  .sort((a, b) => b.views - a.views)
+  .slice(0, 5) || [];
 
   return {
     totalViews: totalViews || 0,
