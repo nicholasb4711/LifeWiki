@@ -12,7 +12,7 @@ export function QuickActions() {
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           <Button asChild variant="default" className="h-24 flex flex-col gap-2">
             <Link href="/wikis/new">
               <Plus className="h-4 w-4" />
