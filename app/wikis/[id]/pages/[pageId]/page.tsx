@@ -8,6 +8,7 @@ import { Edit, Trash2 } from "lucide-react";
 import { Markdown } from "@/components/markdown";
 import { deletePageAction } from "@/app/actions";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
+import { trackPageView } from "@/app/actions/analytics"
 
 interface PageViewProps {
   params: Promise<{
@@ -52,6 +53,9 @@ export default async function PageView(props: PageViewProps) {
   const pageId = await Promise.resolve(params.pageId);
   
   const { page, isOwner } = await getPage(wikiId, pageId);
+
+  // Track page view
+  await trackPageView(pageId);
 
   const deletePageWithId = async () => {
     "use server"

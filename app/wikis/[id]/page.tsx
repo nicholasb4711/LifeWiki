@@ -7,6 +7,8 @@ import { ArrowLeft, FileText, Plus, Trash2 } from "lucide-react";
 import { BackButton } from "@/components/back-button"
 import { deleteWikiAction } from "@/app/actions";
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
+import { AnalyticsDashboard } from "@/components/analytics-dashboard"
+import { getWikiAnalytics } from "@/app/actions/analytics"
 
 interface WikiPageProps {
   params: Promise<{
@@ -58,6 +60,9 @@ export default async function WikiPage(props: WikiPageProps) {
     return deleteWikiAction(formData)
   }
 
+  // Get analytics data
+  const analytics = await getWikiAnalytics(wikiId);
+
   return (
     <div className="max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-8">
       {/* Back Navigation */}
@@ -89,6 +94,23 @@ export default async function WikiPage(props: WikiPageProps) {
           <p className="text-muted-foreground">{wiki.description}</p>
         )}
       </div>
+
+      {/* Analytics Dashboard - Only shown to owner */}
+      {isOwner && analytics && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Analytics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AnalyticsDashboard
+              pageViews={analytics.pageViews}
+              totalViews={analytics.totalViews}
+              uniqueViewers={analytics.uniqueViewers}
+              mostViewedPages={analytics.mostViewedPages}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Wiki Content */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
