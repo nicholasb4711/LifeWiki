@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PopularPagesDashboard } from "@/components/popular-pages-dashboard"
 import { getPopularPages } from "@/app/actions/analytics"
 import { getUserActivities } from "@/app/actions/analytics"
+import { RecentActivityComponent } from "@/components/recent-activity-component"
+import { QuickActions } from "@/components/quick-actions";
 
 interface PopularPage {
   id: string;
@@ -27,8 +29,7 @@ export default async function Index() {
     const [{ count }, pages, userActivities] = await Promise.all([
       supabase
         .from('wikis')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id),
+        .select('*', { count: 'exact'}),
       getPopularPages(),
       getUserActivities()
     ]);
@@ -118,9 +119,11 @@ export default async function Index() {
       {user && (
         <section className="py-8">
           <div className="mx-auto max-w-7xl px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <PopularPagesDashboard pages={popularPages} />
-              
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex-1">
+                <PopularPagesDashboard pages={popularPages} />
+              </div>
+              <QuickActions />
             </div>
           </div>
         </section>

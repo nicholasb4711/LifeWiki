@@ -11,7 +11,7 @@ import { AnalyticsDashboard } from "@/components/analytics-dashboard"
 import { getWikiAnalytics } from "@/app/actions/analytics"
 import { useState } from "react"
 import { CollapsibleAnalytics } from "@/components/collapsible-analytics"
-import { RecentActivityDashboard } from "@/components/recent-activity-dashboard"
+import { RecentActivityComponent } from "@/components/recent-activity-component"
 import { getUserActivities } from "@/app/actions/analytics"
 
 interface WikiPageProps {
@@ -158,35 +158,11 @@ export default async function WikiPage(props: WikiPageProps) {
           </Card>
 
           {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {pages?.slice(0, 5).map((page) => (
-                  <Link
-                    key={page.id}
-                    href={`/wikis/${wikiId}/pages/${page.id}`}
-                    className="flex items-center justify-between py-2 px-2 -mx-2 rounded-md hover:bg-primary-300/50 dark:hover:bg-primary-500/20 transition-colors group"
-                  >
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                      <span className="font-medium group-hover:text-foreground transition-colors">
-                        {page.title}
-                      </span>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      <span>Updated: {new Date(page.updated_at).toLocaleDateString()}</span>
-                      {page.updater?.email && (
-                        <span className="ml-2">by {page.updater.email}</span>
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <RecentActivityComponent 
+            pages={pages || []} 
+            title="Recent Updates"
+            emptyMessage="No pages yet"
+          />
         </div>
       </div>
     </div>

@@ -173,7 +173,7 @@ export async function getPopularPages() {
       wiki_title: page.wiki.title
     }))
     .sort((a, b) => b.views - a.views)
-    .slice(0, 5);
+    .slice(0, 6);
 
   return popularPages;
 }
