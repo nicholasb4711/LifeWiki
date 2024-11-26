@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { WikiCard } from "@/components/wiki-card";
+import { WikiCard } from "@/components/wiki/wiki-card";
 import { createClient } from "@/utils/supabase/server";
 import { Plus } from "lucide-react";
 import Link from "next/link";

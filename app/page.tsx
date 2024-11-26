@@ -3,11 +3,11 @@ import { ArrowRight, BookOpen, Share2, Shield, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PopularPagesDashboard } from "@/components/popular-pages-dashboard"
+import { PopularPagesDashboard } from "@/components/analytics/popular-pages-dashboard"
 import { getPopularPages } from "@/app/actions/analytics"
 import { getUserActivities } from "@/app/actions/analytics"
-import { RecentActivityComponent } from "@/components/recent-activity-component"
-import { QuickActions } from "@/components/quick-actions";
+import { RecentActivityComponent } from "@/components/analytics/recent-activity-component"
+import { QuickActions } from "@/components/ui/quick-actions";
 
 interface PopularPage {
   id: string;

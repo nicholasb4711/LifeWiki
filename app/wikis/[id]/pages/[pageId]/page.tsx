@@ -1,13 +1,13 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import { BackButton } from "@/components/back-button";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Edit, Trash2 } from "lucide-react";
-import { Markdown } from "@/components/markdown";
+import { Markdown } from "@/components/wiki/markdown";
 import { deletePageAction } from "@/app/actions";
-import { ConfirmationDialog } from "@/components/confirmation-dialog";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { trackPageView } from "@/app/actions/analytics"
 
 interface PageViewProps {

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-import { Markdown } from "@/components/markdown"
+import { Markdown } from "@/components/wiki/markdown"
 import { cn } from "@/lib/utils"
 
 interface MarkdownEditorProps {

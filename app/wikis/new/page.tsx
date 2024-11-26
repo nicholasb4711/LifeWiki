@@ -1,5 +1,5 @@
 import { createWikiAction } from "@/app/actions";
-import { SubmitButton } from "@/components/submit-button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { FormMessage } from "@/components/form-message";
+import { FormMessage } from "@/components/ui/form-message";
 
 export default function NewWikiPage() {
   return (

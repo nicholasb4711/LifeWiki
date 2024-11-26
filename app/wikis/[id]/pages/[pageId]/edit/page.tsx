@@ -1,15 +1,15 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BackButton } from "@/components/back-button";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { updatePageAction } from "@/app/actions";
-import { FormMessage } from "@/components/form-message";
-import { SubmitButton } from "@/components/submit-button";
-import { MarkdownEditor } from "@/components/markdown-editor";
+import { FormMessage } from "@/components/ui/form-message";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { MarkdownEditor } from "@/components/wiki/markdown-editor";
 
 interface EditPageProps {
   params: Promise<{

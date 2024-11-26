@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/server";
 import { FolderOpen, Search, Settings, User } from "lucide-react";
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { signOutAction } from "@/app/actions";
 
 export async function NavBar() {

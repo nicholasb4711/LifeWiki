@@ -1,8 +1,8 @@
 import { createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
-import { WikiCard } from "@/components/wiki-card"
-import { SearchBar } from "@/components/search-bar"
+import { WikiCard } from "@/components/wiki/wiki-card"
+import { SearchBar } from "@/components/search/search-bar"
 
 interface SearchPageProps {
   searchParams: Promise<{

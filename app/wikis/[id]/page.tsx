@@ -4,14 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, FileText, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
-import { BackButton } from "@/components/back-button"
+import { BackButton } from "@/components/ui/back-button"
 import { deleteWikiAction } from "@/app/actions";
-import { ConfirmationDialog } from "@/components/confirmation-dialog"
-import { AnalyticsDashboard } from "@/components/analytics-dashboard"
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog"
+import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
 import { getWikiAnalytics } from "@/app/actions/analytics"
 import { useState } from "react"
-import { CollapsibleAnalytics } from "@/components/collapsible-analytics"
-import { RecentActivityComponent } from "@/components/recent-activity-component"
+import { CollapsibleAnalytics } from "@/components/analytics/collapsible-analytics"
+import { RecentActivityComponent } from "@/components/analytics/recent-activity-component"
 import { getUserActivities } from "@/app/actions/analytics"
 
 interface WikiPageProps {
