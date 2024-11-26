@@ -4,6 +4,7 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { trackActivity } from "@/app/actions/analytics";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -164,6 +165,9 @@ export const createWikiAction = async (formData: FormData) => {
     return encodedRedirect("error", "/wikis/new", "Failed to create wiki");
   }
 
+  // Track activity
+  await trackActivity('create_wiki', 'wiki', wiki.id);
+
   return encodedRedirect("success", `/wikis/${wiki.id}`, "Wiki created successfully");
 }
 
@@ -224,6 +228,9 @@ export const createPageAction = async (formData: FormData) => {
       "Failed to create page"
     );
   }
+
+  // Track activity
+  await trackActivity('create_page', 'page', page.id);
 
   return encodedRedirect(
     "success",
@@ -290,6 +297,9 @@ export const updatePageAction = async (formData: FormData) => {
     );
   }
 
+  // Track activity
+  await trackActivity('edit_page', 'page', pageId);
+
   return encodedRedirect(
     "success",
     `/wikis/${wikiId}/pages/${pageId}`,
@@ -312,10 +322,10 @@ export const deleteWikiAction = async (formData: FormData) => {
     return encodedRedirect("error", "/wikis", "Wiki ID is required");
   }
 
-  // Verify user owns the wiki
+  // Verify user owns the wiki and get wiki details
   const { data: wiki } = await supabase
     .from("wikis")
-    .select("user_id")
+    .select("user_id, title")  // Added title to the select
     .eq("id", wikiId)
     .single();
 
@@ -326,6 +336,9 @@ export const deleteWikiAction = async (formData: FormData) => {
       "You don't have permission to delete this wiki"
     );
   }
+
+  // Track activity before deletion
+  await trackActivity('delete_wiki', 'wiki', wikiId, { title: wiki.title });
 
   // Delete the wiki (pages will be cascade deleted)
   const { error } = await supabase
@@ -384,6 +397,16 @@ export const deletePageAction = async (formData: FormData) => {
     );
   }
 
+  // Get page title before deletion
+  const { data: page } = await supabase
+    .from("pages")
+    .select("title")
+    .eq("id", pageId)
+    .single();
+
+  // Track activity before deletion
+  await trackActivity('delete_page', 'page', pageId, { title: page?.title });
+
   // Delete the page
   const { error } = await supabase
     .from("pages")
@@ -405,4 +428,115 @@ export const deletePageAction = async (formData: FormData) => {
     `/wikis/${wikiId}`,
     "Page deleted successfully"
   );
+};
+
+export const updateWikiAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  const wikiId = formData.get("wikiId")?.toString();
+  const title = formData.get("title")?.toString();
+  const description = formData.get("description")?.toString();
+  const isPublic = formData.get("isPublic")?.toString() === "true";
+
+  if (!wikiId || !title || !description || !isPublic) {
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/edit`,
+      "All fields are required"
+    );
+  }
+
+  // Verify user owns the wiki
+  const { data: wiki } = await supabase
+    .from("wikis")
+    .select("user_id")
+    .eq("id", wikiId)
+    .single();
+
+  if (!wiki || wiki.user_id !== user.id) {
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/edit`,
+      "You don't have permission to edit this wiki"
+    );
+  }
+
+  const { error } = await supabase
+    .from("wikis")
+    .update({
+      title,
+      description,
+      is_public: isPublic,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", wikiId);
+
+  if (error) {
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/edit`,
+      "Failed to update wiki"
+    );
+  }
+
+  // Track activity
+  await trackActivity('update_wiki', 'wiki', wikiId, {
+    title,
+    is_public: isPublic
+  });
+
+  return encodedRedirect(
+    "success",
+    `/wikis/${wikiId}`,
+    "Wiki updated successfully"
+  );
+};
+
+export const shareWikiAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  const wikiId = formData.get("wikiId")?.toString();
+  const isPublic = formData.get("isPublic")?.toString() === "true";
+
+  if (!wikiId || !isPublic) {
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/share`,
+      "All fields are required"
+    );
+  }
+
+  // Verify user owns the wiki
+  const { data: wiki } = await supabase
+    .from("wikis")
+    .select("user_id")
+    .eq("id", wikiId)
+    .single();
+
+  if (!wiki || wiki.user_id !== user.id) {
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/share`,
+      "You don't have permission to share this wiki"
+    );
+  }
+
+  // Track activity
+  await trackActivity('share_wiki', 'wiki', wikiId, {
+    is_public: isPublic
+  });
+
+  // ... rest of the function ...
 };

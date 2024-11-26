@@ -1,21 +1,41 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Share2, Shield } from "lucide-react";
+import { ArrowRight, BookOpen, Share2, Shield, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/server";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PopularPagesDashboard } from "@/components/popular-pages-dashboard"
+import { getPopularPages } from "@/app/actions/analytics"
+import { RecentActivityDashboard } from "@/components/recent-activity-dashboard"
+import { getUserActivities } from "@/app/actions/analytics"
+
+interface PopularPage {
+  id: string;
+  title: string;
+  views: number;
+  wiki_id: string;
+  wiki_title: string;
+}
 
 export default async function Index() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Get user's wikis count if logged in
+  // Get user's wikis count and popular pages if logged in
   let wikisCount = 0;
+  let activities = [];
+  let popularPages: PopularPage[] = [];
   if (user) {
-    const { count } = await supabase
-      .from('wikis')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id);
+    const [{ count }, pages, userActivities] = await Promise.all([
+      supabase
+        .from('wikis')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id),
+      getPopularPages(),
+      getUserActivities()
+    ]);
     wikisCount = count || 0;
+    popularPages = pages || [];
+    activities = userActivities || [];
   }
 
   return (
@@ -94,6 +114,18 @@ export default async function Index() {
           </div>
         </div>
       </section>
+
+      {/* Analytics Section - Only shown for logged in users */}
+      {user && (
+        <section className="py-8">
+          <div className="mx-auto max-w-7xl px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <PopularPagesDashboard pages={popularPages} />
+              
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

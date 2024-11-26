@@ -3,12 +3,16 @@ import { notFound, redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, FileText, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, FileText, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { BackButton } from "@/components/back-button"
 import { deleteWikiAction } from "@/app/actions";
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
 import { AnalyticsDashboard } from "@/components/analytics-dashboard"
 import { getWikiAnalytics } from "@/app/actions/analytics"
+import { useState } from "react"
+import { CollapsibleAnalytics } from "@/components/collapsible-analytics"
+import { RecentActivityDashboard } from "@/components/recent-activity-dashboard"
+import { getUserActivities } from "@/app/actions/analytics"
 
 interface WikiPageProps {
   params: Promise<{
@@ -60,8 +64,18 @@ export default async function WikiPage(props: WikiPageProps) {
     return deleteWikiAction(formData)
   }
 
-  // Get analytics data
-  const analytics = await getWikiAnalytics(wikiId);
+  // Get analytics and activities
+  const [analytics, activities] = await Promise.all([
+    getWikiAnalytics(wikiId),
+    getUserActivities()
+  ]);
+
+  // Filter activities to only show ones related to this wiki
+  const wikiActivities = activities?.filter(
+    activity => 
+      (activity.wiki?.id === wikiId) || 
+      (activity.page?.wiki_id === wikiId)
+  ) || [];
 
   return (
     <div className="max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-8">
@@ -97,19 +111,7 @@ export default async function WikiPage(props: WikiPageProps) {
 
       {/* Analytics Dashboard - Only shown to owner */}
       {isOwner && analytics && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Analytics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AnalyticsDashboard
-              pageViews={analytics.pageViews}
-              totalViews={analytics.totalViews}
-              uniqueViewers={analytics.uniqueViewers}
-              mostViewedPages={analytics.mostViewedPages}
-            />
-          </CardContent>
-        </Card>
+        <CollapsibleAnalytics analytics={analytics} />
       )}
 
       {/* Wiki Content */}
