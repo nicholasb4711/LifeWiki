@@ -296,3 +296,113 @@ export const updatePageAction = async (formData: FormData) => {
     "Page updated successfully"
   );
 };
+
+export const deleteWikiAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  const wikiId = formData.get("wikiId")?.toString();
+
+  if (!wikiId) {
+    return encodedRedirect("error", "/wikis", "Wiki ID is required");
+  }
+
+  // Verify user owns the wiki
+  const { data: wiki } = await supabase
+    .from("wikis")
+    .select("user_id")
+    .eq("id", wikiId)
+    .single();
+
+  if (!wiki || wiki.user_id !== user.id) {
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}`,
+      "You don't have permission to delete this wiki"
+    );
+  }
+
+  // Delete the wiki (pages will be cascade deleted)
+  const { error } = await supabase
+    .from("wikis")
+    .delete()
+    .eq("id", wikiId);
+
+  if (error) {
+    console.error("Error deleting wiki:", error);
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}`,
+      "Failed to delete wiki"
+    );
+  }
+
+  return encodedRedirect(
+    "success",
+    "/wikis",
+    "Wiki deleted successfully"
+  );
+};
+
+export const deletePageAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  const wikiId = formData.get("wikiId")?.toString();
+  const pageId = formData.get("pageId")?.toString();
+
+  if (!wikiId || !pageId) {
+    return encodedRedirect(
+      "error", 
+      `/wikis/${wikiId}`,
+      "Wiki ID and Page ID are required"
+    );
+  }
+
+  // Verify user owns the wiki
+  const { data: wiki } = await supabase
+    .from("wikis")
+    .select("user_id")
+    .eq("id", wikiId)
+    .single();
+
+  if (!wiki || wiki.user_id !== user.id) {
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/pages/${pageId}`,
+      "You don't have permission to delete this page"
+    );
+  }
+
+  // Delete the page
+  const { error } = await supabase
+    .from("pages")
+    .delete()
+    .eq("id", pageId)
+    .eq("wiki_id", wikiId);
+
+  if (error) {
+    console.error("Error deleting page:", error);
+    return encodedRedirect(
+      "error",
+      `/wikis/${wikiId}/pages/${pageId}`,
+      "Failed to delete page"
+    );
+  }
+
+  return encodedRedirect(
+    "success",
+    `/wikis/${wikiId}`,
+    "Page deleted successfully"
+  );
+};

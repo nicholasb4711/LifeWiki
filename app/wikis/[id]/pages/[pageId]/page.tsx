@@ -4,8 +4,10 @@ import { Card } from "@/components/ui/card";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Edit } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { Markdown } from "@/components/markdown";
+import { deletePageAction } from "@/app/actions";
+import { ConfirmationDialog } from "@/components/confirmation-dialog";
 
 interface PageViewProps {
   params: Promise<{
@@ -51,17 +53,32 @@ export default async function PageView(props: PageViewProps) {
   
   const { page, isOwner } = await getPage(wikiId, pageId);
 
+  const deletePageWithId = async () => {
+    "use server"
+    const formData = new FormData()
+    formData.append("wikiId", wikiId)
+    formData.append("pageId", pageId)
+    return deletePageAction(formData)
+  }
+
   return (
     <div className="max-w-4xl mx-auto w-full p-4 sm:p-6 space-y-8">
       <div className="flex items-center justify-between">
         <BackButton label={`Back to ${page.wiki.title}`} />
         {isOwner && (
-          <Button asChild size="sm">
-            <Link href={`/wikis/${wikiId}/pages/${pageId}/edit`}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <ConfirmationDialog
+              title="Delete Page"
+              description="Are you sure you want to delete this page? This action cannot be undone."
+              action={deletePageWithId}
+            />
+            <Button asChild size="sm">
+              <Link href={`/wikis/${wikiId}/pages/${pageId}/edit`}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Link>
+            </Button>
+          </div>
         )}
       </div>
 
