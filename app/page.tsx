@@ -5,7 +5,6 @@ import { createClient } from "@/utils/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PopularPagesDashboard } from "@/components/popular-pages-dashboard"
 import { getPopularPages } from "@/app/actions/analytics"
-import { RecentActivityDashboard } from "@/components/recent-activity-dashboard"
 import { getUserActivities } from "@/app/actions/analytics"
 
 interface PopularPage {
