@@ -128,7 +128,7 @@ export default async function WikiPage(props: WikiPageProps) {
                   <Link
                     key={page.id}
                     href={`/wikis/${wikiId}/pages/${page.id}`}
-                    className="flex items-center gap-2 p-2 rounded-md hover:bg-primary-300/50 dark:hover:bg-primary-500/20 hover:border hover:border-primary text-sm group transition-colors"
+                    className="flex items-center gap-2 p-2 rounded-md hover:bg-primary-300/50 dark:hover:bg-primary-500/20 text-sm group transition-colors"
                   >
                     <FileText className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                     <span className="truncate">{page.title}</span>
@@ -163,13 +163,16 @@ export default async function WikiPage(props: WikiPageProps) {
             <CardContent>
               <div className="space-y-4">
                 {pages?.slice(0, 5).map((page) => (
-                  <div
+                  <Link
                     key={page.id}
-                    className="flex items-center justify-between py-2"
+                    href={`/wikis/${wikiId}/pages/${page.id}`}
+                    className="flex items-center justify-between py-2 px-2 -mx-2 rounded-md hover:bg-primary-300/50 dark:hover:bg-primary-500/20 transition-colors group"
                   >
                     <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span>{page.title}</span>
+                      <FileText className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      <span className="font-medium group-hover:text-foreground transition-colors">
+                        {page.title}
+                      </span>
                     </div>
                     <div className="text-sm text-muted-foreground">
                       <span>Updated: {new Date(page.updated_at).toLocaleDateString()}</span>
@@ -177,7 +180,7 @@ export default async function WikiPage(props: WikiPageProps) {
                         <span className="ml-2">by {page.updater.email}</span>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </CardContent>
