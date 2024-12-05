@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { TagFilter } from "@/components/wiki/tag-filter";
 
 // Add interface at the top
 interface WikiTag {
@@ -12,8 +13,34 @@ interface WikiTag {
   };
 }
 
-export default async function MyWikisPage() {
+interface Wiki {
+  id: string;
+  title: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  tags?: { name: string }[];
+}
+
+interface MyWikisPageProps {
+  searchParams: Promise<{
+    tags?: string;
+  }>;
+}
+
+interface TagData {
+  tag: {
+    name: string;
+  };
+  wiki: {
+    user_id: string;
+  };
+}
+
+export default async function MyWikisPage({ searchParams }: MyWikisPageProps) {
   const supabase = await createClient();
+  const params = await searchParams;
 
   // Check authentication
   const { data: { user } } = await supabase.auth.getUser();
@@ -21,22 +48,87 @@ export default async function MyWikisPage() {
     redirect("/sign-in");
   }
 
+  // Get selected tags from URL
+  const selectedTags = params.tags?.split(',').filter(Boolean) || [];
+
+  // Declare wikis and error variables
+  let wikis: any;
+  let error: any;
+
   // Fetch user's wikis with their tags
-  const { data: wikis, error } = await supabase
-    .from('wikis')
-    .select(`
-      *,
-      tags:wiki_tags(
-        tag:tags(
-          name
+  if (selectedTags.length > 0) {
+    const { data: filteredWikiIds } = await supabase
+      .from('tags')
+      .select(`
+        wikis:wiki_tags!inner(
+          wiki_id
         )
+      `)
+      .in('name', selectedTags);
+
+    const wikiIds = filteredWikiIds?.map(t => t.wikis[0].wiki_id) || [];
+
+    const { data, error: err } = await supabase
+      .from('wikis')
+      .select(`
+        *,
+        tags:wiki_tags(
+          tag:tags(
+            name
+          )
+        )
+      `)
+      .eq('user_id', user.id)
+      .in('id', wikiIds)
+      .order('updated_at', { ascending: false });
+
+    wikis = data;
+    error = err;
+  } else {
+    const { data, error: err } = await supabase
+      .from('wikis')
+      .select(`
+        *,
+        tags:wiki_tags(
+          tag:tags(
+            name
+          )
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false });
+
+    wikis = data;
+    error = err;
+  }
+
+  // Get all available tags for user's wikis
+  const { data: tagData } = await supabase
+    .from('wiki_tags')
+    .select(`
+      tag:tags!inner (
+        name
+      ),
+      wiki:wikis!inner (
+        user_id
       )
     `)
-    .eq('user_id', user.id)
-    .order('updated_at', { ascending: false });
+    .eq('wiki.user_id', user.id);
 
-  // Transform the data to match the WikiCard interface
-  const transformedWikis = wikis?.map(wiki => ({
+  // Count tags in JavaScript
+  const tagCounts = tagData?.reduce<Record<string, number>>((acc, tag: TagData) => {
+    const name = tag.tag.name;
+    acc[name] = (acc[name] || 0) + 1;
+    return acc;
+  }, {});
+
+  const availableTags = Object.entries(tagCounts || {}).map(([name, count]) => ({
+    name,
+    count
+  }));
+
+  // Transform wikis data
+  const transformedWikis = wikis?.map((wiki: any) => ({
     ...wiki,
     tags: wiki.tags?.map((t: WikiTag) => t.tag)
   })) || [];
@@ -58,6 +150,10 @@ export default async function MyWikisPage() {
         </Button>
       </div>
 
+      {availableTags.length > 0 && (
+        <TagFilter availableTags={availableTags} />
+      )}
+
       {transformedWikis.length === 0 ? (
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold mb-2">No wikis yet</h2>
@@ -73,7 +169,7 @@ export default async function MyWikisPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {transformedWikis.map((wiki) => (
+          {transformedWikis.map((wiki: Wiki) => (
             <WikiCard key={wiki.id} wiki={wiki} />
           ))}
         </div>
