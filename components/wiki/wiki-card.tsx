@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { formatDate } from "@/lib/utils";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 interface WikiCardProps {
   wiki: {
@@ -12,6 +13,7 @@ interface WikiCardProps {
     created_at: string;
     updated_at: string;
     user_id: string;
+    tags?: { name: string }[];
   };
   authorName?: string;
 }
@@ -32,9 +34,18 @@ export function WikiCard({ wiki, authorName }: WikiCardProps) {
           )}
         </CardHeader>
         <CardContent className="flex-1">
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
             {wiki.description || "No description provided"}
           </p>
+          {wiki.tags && wiki.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {wiki.tags.map((tag, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {tag.name}
+                </Badge>
+              ))}
+            </div>
+          )}
         </CardContent>
         <CardFooter className="text-xs text-muted-foreground">
           <div className="flex flex-col gap-1">

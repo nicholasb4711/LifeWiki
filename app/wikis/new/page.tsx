@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { FormMessage } from "@/components/ui/form-message";
+import { TagInput } from "@/components/ui/tag-input";
 
 export default function NewWikiPage() {
   return (
@@ -56,6 +57,18 @@ export default function NewWikiPage() {
             <div className="flex items-center space-x-2">
               <Checkbox id="isPublic" name="isPublic" value="true" />
               <Label htmlFor="isPublic">Make this wiki public</Label>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags</Label>
+              <TagInput
+                id="tags"
+                name="tags"
+                placeholder="Add tags..."
+              />
+              <p className="text-sm text-muted-foreground">
+                Separate tags with commas or press Enter
+              </p>
             </div>
 
             <div className="flex gap-4">

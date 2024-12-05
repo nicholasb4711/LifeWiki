@@ -137,7 +137,7 @@ export const signOutAction = async () => {
 
 export const createWikiAction = async (formData: FormData) => {
   const supabase = await createClient();
-
+  
   // check if user is authenticated
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -147,22 +147,72 @@ export const createWikiAction = async (formData: FormData) => {
   const title = formData.get("title")?.toString();
   const description = formData.get("description")?.toString();
   const isPublic = formData.get("isPublic")?.toString() === "true";
+  const tags = formData.get("tags")?.toString().split(",").filter(Boolean) || [];
 
   if (!title) {
     return encodedRedirect("error", "/wikis/new", "Title is required");
   }
 
-  // insert wiki into database
-  const { data: wiki, error } = await supabase.from("wikis").insert({
-    title,
-    description,
-    is_public: isPublic,
-    user_id: user.id,
-  }).select().single();
+  // Start a transaction
+  const { data: wiki, error: wikiError } = await supabase
+    .from("wikis")
+    .insert({
+      title,
+      description,
+      is_public: isPublic,
+      user_id: user.id,
+    })
+    .select()
+    .single();
 
-  if (error) {
-    console.error('error creating wiki', error);
+  if (wikiError) {
     return encodedRedirect("error", "/wikis/new", "Failed to create wiki");
+  }
+
+  // Handle tags
+  if (tags.length > 0) {
+    // First, ensure all tags exist
+    const { data: existingTags } = await supabase
+      .from("tags")
+      .select("id, name")
+      .in("name", tags);
+
+    const existingTagNames = existingTags?.map(t => t.name) || [];
+    const newTags = tags.filter(t => !existingTagNames.includes(t));
+
+    // Create new tags
+    if (newTags.length > 0) {
+      const { error: tagError } = await supabase
+        .from("tags")
+        .insert(newTags.map(name => ({
+          name,
+          user_id: user.id
+        })));
+
+      if (tagError) {
+        console.error("Error creating tags:", tagError);
+      }
+    }
+
+    // Get all tag IDs (both existing and newly created)
+    const { data: allTags } = await supabase
+      .from("tags")
+      .select("id, name")
+      .in("name", tags);
+
+    // Associate tags with wiki
+    if (allTags) {
+      const { error: linkError } = await supabase
+        .from("wiki_tags")
+        .insert(allTags.map(tag => ({
+          wiki_id: parseInt(wiki.id),
+          tag_id: tag.id
+        })));
+
+      if (linkError) {
+        console.error("Error linking tags:", linkError);
+      }
+    }
   }
 
   // Track activity
