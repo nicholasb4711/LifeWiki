@@ -5,6 +5,13 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+// Add interface at the top
+interface WikiTag {
+  tag: {
+    name: string;
+  };
+}
+
 export default async function MyWikisPage() {
   const supabase = await createClient();
 
@@ -14,12 +21,25 @@ export default async function MyWikisPage() {
     redirect("/sign-in");
   }
 
-  // Fetch only user's wikis
+  // Fetch user's wikis with their tags
   const { data: wikis, error } = await supabase
     .from('wikis')
-    .select('*')
+    .select(`
+      *,
+      tags:wiki_tags(
+        tag:tags(
+          name
+        )
+      )
+    `)
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false });
+
+  // Transform the data to match the WikiCard interface
+  const transformedWikis = wikis?.map(wiki => ({
+    ...wiki,
+    tags: wiki.tags?.map((t: WikiTag) => t.tag)
+  })) || [];
 
   if (error) {
     console.error('Error fetching wikis:', error);
@@ -38,7 +58,7 @@ export default async function MyWikisPage() {
         </Button>
       </div>
 
-      {wikis.length === 0 ? (
+      {transformedWikis.length === 0 ? (
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold mb-2">No wikis yet</h2>
           <p className="text-muted-foreground mb-4">
@@ -53,7 +73,7 @@ export default async function MyWikisPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {wikis.map((wiki) => (
+          {transformedWikis.map((wiki) => (
             <WikiCard key={wiki.id} wiki={wiki} />
           ))}
         </div>
