@@ -13,7 +13,7 @@ export function TagFilter({ availableTags }: TagFilterProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [selectedTags, setSelectedTags] = useState<string[]>(
-    searchParams.get('tags')?.split(',').filter(Boolean) || []
+    searchParams?.get('tags')?.split(',').filter(Boolean) || []
   )
 
   const toggleTag = (tagName: string) => {
@@ -24,7 +24,7 @@ export function TagFilter({ availableTags }: TagFilterProps) {
     setSelectedTags(newTags)
     
     // Update URL
-    const params = new URLSearchParams(searchParams)
+    const params = new URLSearchParams(searchParams?.toString())
     if (newTags.length > 0) {
       params.set('tags', newTags.join(','))
     } else {
