@@ -3,10 +3,16 @@ import { notFound, redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, FileText, Plus, Trash2 } from "lucide-react";
-import { BackButton } from "@/components/back-button"
+import { ArrowLeft, FileText, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { BackButton } from "@/components/ui/back-button"
 import { deleteWikiAction } from "@/app/actions";
-import { ConfirmationDialog } from "@/components/confirmation-dialog"
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog"
+import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
+import { getWikiAnalytics } from "@/app/actions/analytics"
+import { useState } from "react"
+import { CollapsibleAnalytics } from "@/components/analytics/collapsible-analytics"
+import { RecentActivityComponent } from "@/components/analytics/recent-activity-component"
+import { getUserActivities } from "@/app/actions/analytics"
 
 interface WikiPageProps {
   params: Promise<{
@@ -58,37 +64,55 @@ export default async function WikiPage(props: WikiPageProps) {
     return deleteWikiAction(formData)
   }
 
+  // Get analytics and activities
+  const [analytics, activities] = await Promise.all([
+    getWikiAnalytics(wikiId),
+    getUserActivities()
+  ]);
+
+  // Filter activities to only show ones related to this wiki
+  const wikiActivities = activities?.filter(
+    activity => 
+      (activity.wiki?.id === wikiId) || 
+      (activity.page?.wiki_id === wikiId)
+  ) || [];
+
   return (
     <div className="max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-8">
       {/* Back Navigation */}
       <div className="mb-8">
-        <BackButton label="Back" />
+        <BackButton label="Back to Wikis" href="/wikis" />
       </div>
 
       {/* Wiki Header */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">{wiki.title}</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">{wiki.title}</h1>
           <div className="flex gap-2">
-            {isOwner && (
-              <ConfirmationDialog
-                title="Delete Wiki"
-                description="Are you sure you want to delete this wiki? This action cannot be undone and will delete all pages within this wiki."
-                action={deleteWikiWithId}
-              />
-            )}
-            <Button asChild size="sm">
-              <Link href={`/wikis/${wikiId}/pages/new`}>
-                <Plus className="h-4 w-4 mr-2" />
-                New Page
-              </Link>
-            </Button>
+          {wiki.user_id === user.id && (
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/wikis/${params.id}/edit`}>
+                  Edit Wiki
+                </Link>
+              </Button> 
+          )}
+          <Button asChild size="sm">
+                <Link href={`/wikis/${wikiId}/pages/new`}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Page
+                </Link>
+              </Button>
           </div>
         </div>
         {wiki.description && (
           <p className="text-muted-foreground">{wiki.description}</p>
         )}
       </div>
+
+      {/* Analytics Dashboard - Only shown to owner */}
+      {isOwner && analytics && (
+        <CollapsibleAnalytics analytics={analytics} />
+      )}
 
       {/* Wiki Content */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -134,35 +158,11 @@ export default async function WikiPage(props: WikiPageProps) {
           </Card>
 
           {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {pages?.slice(0, 5).map((page) => (
-                  <Link
-                    key={page.id}
-                    href={`/wikis/${wikiId}/pages/${page.id}`}
-                    className="flex items-center justify-between py-2 px-2 -mx-2 rounded-md hover:bg-primary-300/50 dark:hover:bg-primary-500/20 transition-colors group"
-                  >
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                      <span className="font-medium group-hover:text-foreground transition-colors">
-                        {page.title}
-                      </span>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      <span>Updated: {new Date(page.updated_at).toLocaleDateString()}</span>
-                      {page.updater?.email && (
-                        <span className="ml-2">by {page.updater.email}</span>
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <RecentActivityComponent 
+            pages={pages || []} 
+            title="Recent Updates"
+            emptyMessage="No pages yet"
+          />
         </div>
       </div>
     </div>

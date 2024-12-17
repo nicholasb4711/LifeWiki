@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useState } from "react"
-import { Button } from "./ui/button"
+import { Button } from "../ui/button"
 import { Search, SortAsc, SortDesc } from "lucide-react"
 
 interface SearchBarProps {

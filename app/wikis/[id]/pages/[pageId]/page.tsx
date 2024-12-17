@@ -1,13 +1,14 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import { BackButton } from "@/components/back-button";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Edit, Trash2 } from "lucide-react";
-import { Markdown } from "@/components/markdown";
+import { Edit, Trash } from "lucide-react";
+import { Markdown } from "@/components/wiki/markdown";
 import { deletePageAction } from "@/app/actions";
-import { ConfirmationDialog } from "@/components/confirmation-dialog";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { trackPageView } from "@/app/actions/analytics"
 
 interface PageViewProps {
   params: Promise<{
@@ -41,7 +42,7 @@ async function getPage(wikiId: string, pageId: string) {
 
   // Check if user has access
   const { data: { user } } = await supabase.auth.getUser();
-  const isOwner = user?.id === page.wiki.user_id;
+  const isOwner = user?.id === page.created_by;
 
   return { page, isOwner };
 }
@@ -52,6 +53,9 @@ export default async function PageView(props: PageViewProps) {
   const pageId = await Promise.resolve(params.pageId);
   
   const { page, isOwner } = await getPage(wikiId, pageId);
+
+  // Track page view
+  await trackPageView(pageId);
 
   const deletePageWithId = async () => {
     "use server"
@@ -64,20 +68,26 @@ export default async function PageView(props: PageViewProps) {
   return (
     <div className="max-w-4xl mx-auto w-full p-4 sm:p-6 space-y-8">
       <div className="flex items-center justify-between">
-        <BackButton label={`Back to ${page.wiki.title}`} />
+        <BackButton label={`Back to ${page.wiki.title}`} href={`/wikis/${wikiId}`} />
         {isOwner && (
           <div className="flex gap-2">
-            <ConfirmationDialog
-              title="Delete Page"
-              description="Are you sure you want to delete this page? This action cannot be undone."
-              action={deletePageWithId}
-            />
-            <Button asChild size="sm">
+            <Button asChild variant="outline" size="sm">
               <Link href={`/wikis/${wikiId}/pages/${pageId}/edit`}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </Link>
             </Button>
+            <ConfirmationDialog
+              title="Delete Page"
+              description="Are you sure you want to delete this page? This action cannot be undone."
+              action={deletePageWithId}
+              trigger={
+                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                  <Trash className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              }
+            />
           </div>
         )}
       </div>
