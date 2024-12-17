@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { WikiCard } from "@/components/wiki/wiki-card"
 import { SearchBar } from "@/components/search/search-bar"
+import { PageCard } from "@/components/wiki/page-card"
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -128,11 +129,12 @@ export default async function SearchPage(props: SearchPageProps) {
                 <h2 className="text-xl font-semibold border-b pb-2">Pages</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {pages.map((page) => (
-                    <WikiCard 
+                    <PageCard 
                       key={`page-${page.id}`} 
-                      wiki={{
+                      page={{
                         ...page.wiki,
                         id: page.id,
+                        wiki_id: page.wiki_id,
                         title: `${page.wiki.title} > ${page.title}`,
                         description: page.text.substring(0, 200) + '...'
                       }} 

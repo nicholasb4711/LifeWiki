@@ -137,7 +137,7 @@ export const signOutAction = async () => {
 
 export const createWikiAction = async (formData: FormData) => {
   const supabase = await createClient();
-
+  
   // check if user is authenticated
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -147,22 +147,72 @@ export const createWikiAction = async (formData: FormData) => {
   const title = formData.get("title")?.toString();
   const description = formData.get("description")?.toString();
   const isPublic = formData.get("isPublic")?.toString() === "true";
+  const tags = formData.get("tags")?.toString().split(",").filter(Boolean) || [];
 
   if (!title) {
     return encodedRedirect("error", "/wikis/new", "Title is required");
   }
 
-  // insert wiki into database
-  const { data: wiki, error } = await supabase.from("wikis").insert({
-    title,
-    description,
-    is_public: isPublic,
-    user_id: user.id,
-  }).select().single();
+  // Start a transaction
+  const { data: wiki, error: wikiError } = await supabase
+    .from("wikis")
+    .insert({
+      title,
+      description,
+      is_public: isPublic,
+      user_id: user.id,
+    })
+    .select()
+    .single();
 
-  if (error) {
-    console.error('error creating wiki', error);
+  if (wikiError) {
     return encodedRedirect("error", "/wikis/new", "Failed to create wiki");
+  }
+
+  // Handle tags
+  if (tags.length > 0) {
+    // First, ensure all tags exist
+    const { data: existingTags } = await supabase
+      .from("tags")
+      .select("id, name")
+      .in("name", tags);
+
+    const existingTagNames = existingTags?.map(t => t.name) || [];
+    const newTags = tags.filter(t => !existingTagNames.includes(t));
+
+    // Create new tags
+    if (newTags.length > 0) {
+      const { error: tagError } = await supabase
+        .from("tags")
+        .insert(newTags.map(name => ({
+          name,
+          user_id: user.id
+        })));
+
+      if (tagError) {
+        console.error("Error creating tags:", tagError);
+      }
+    }
+
+    // Get all tag IDs (both existing and newly created)
+    const { data: allTags } = await supabase
+      .from("tags")
+      .select("id, name")
+      .in("name", tags);
+
+    // Associate tags with wiki
+    if (allTags) {
+      const { error: linkError } = await supabase
+        .from("wiki_tags")
+        .insert(allTags.map(tag => ({
+          wiki_id: parseInt(wiki.id),
+          tag_id: tag.id
+        })));
+
+      if (linkError) {
+        console.error("Error linking tags:", linkError);
+      }
+    }
   }
 
   // Track activity
@@ -199,7 +249,7 @@ export const createPageAction = async (formData: FormData) => {
     .eq("id", wikiId)
     .single();
 
-  if (!wiki || wiki.user_id !== user.id) {
+  if (!wiki) {
     return encodedRedirect(
       "error",
       `/wikis/${wikiId}/pages/new`,
@@ -382,27 +432,20 @@ export const deletePageAction = async (formData: FormData) => {
     );
   }
 
-  // Verify user owns the wiki
-  const { data: wiki } = await supabase
-    .from("wikis")
-    .select("user_id")
-    .eq("id", wikiId)
+  // Verify user owns the page
+  const { data: page } = await supabase
+    .from("pages")
+    .select("created_by, title")
+    .eq("id", pageId)
     .single();
 
-  if (!wiki || wiki.user_id !== user.id) {
+  if (!page || page.created_by !== user.id) {
     return encodedRedirect(
       "error",
       `/wikis/${wikiId}/pages/${pageId}`,
       "You don't have permission to delete this page"
     );
   }
-
-  // Get page title before deletion
-  const { data: page } = await supabase
-    .from("pages")
-    .select("title")
-    .eq("id", pageId)
-    .single();
 
   // Track activity before deletion
   await trackActivity('delete_page', 'page', pageId, { title: page?.title });
@@ -439,63 +482,95 @@ export const updateWikiAction = async (formData: FormData) => {
     redirect("/sign-in");
   }
 
-  const wikiId = formData.get("wikiId")?.toString();
+  const id = formData.get("id")?.toString();
   const title = formData.get("title")?.toString();
   const description = formData.get("description")?.toString();
   const isPublic = formData.get("isPublic")?.toString() === "true";
+  const tags = formData.get("tags")?.toString().split(",").filter(Boolean) || [];
 
-  if (!wikiId || !title || !description || !isPublic) {
-    return encodedRedirect(
-      "error",
-      `/wikis/${wikiId}/edit`,
-      "All fields are required"
-    );
+  if (!id || !title) {
+    return encodedRedirect("error", `/wikis/${id}/edit`, "Title is required");
   }
 
-  // Verify user owns the wiki
+  // Check ownership
   const { data: wiki } = await supabase
     .from("wikis")
     .select("user_id")
-    .eq("id", wikiId)
+    .eq("id", id)
     .single();
 
   if (!wiki || wiki.user_id !== user.id) {
-    return encodedRedirect(
-      "error",
-      `/wikis/${wikiId}/edit`,
-      "You don't have permission to edit this wiki"
-    );
+    return encodedRedirect("error", "/wikis", "Unauthorized");
   }
 
-  const { error } = await supabase
+  // Update wiki
+  const { error: wikiError } = await supabase
     .from("wikis")
     .update({
       title,
       description,
       is_public: isPublic,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
-    .eq("id", wikiId);
+    .eq("id", id);
 
-  if (error) {
-    return encodedRedirect(
-      "error",
-      `/wikis/${wikiId}/edit`,
-      "Failed to update wiki"
-    );
+  if (wikiError) {
+    return encodedRedirect("error", `/wikis/${id}/edit`, "Failed to update wiki");
+  }
+
+  // Handle tags
+  // First, remove all existing tags
+  await supabase
+    .from("wiki_tags")
+    .delete()
+    .eq("wiki_id", id);
+
+  if (tags.length > 0) {
+    // Ensure all tags exist
+    const { data: existingTags } = await supabase
+      .from("tags")
+      .select("id, name")
+      .in("name", tags);
+
+    const existingTagNames = existingTags?.map(t => t.name) || [];
+    const newTags = tags.filter(t => !existingTagNames.includes(t));
+
+    // Create new tags
+    if (newTags.length > 0) {
+      await supabase
+        .from("tags")
+        .insert(newTags.map(name => ({
+          name,
+          user_id: user.id
+        })));
+    }
+
+    // Get all tag IDs
+    const { data: allTags } = await supabase
+      .from("tags")
+      .select("id, name")
+      .in("name", tags);
+
+    // Associate tags with wiki
+    if (allTags) {
+      await supabase
+        .from("wiki_tags")
+        .insert(allTags.map(tag => ({
+          wiki_id: parseInt(id),
+          tag_id: tag.id
+        })));
+    }
   }
 
   // Track activity
-  await trackActivity('update_wiki', 'wiki', wikiId, {
-    title,
-    is_public: isPublic
-  });
-
-  return encodedRedirect(
-    "success",
-    `/wikis/${wikiId}`,
-    "Wiki updated successfully"
+  await trackActivity(
+    "update_wiki",
+    "wiki",
+    id,
+    { title }
   );
+
+  return redirect(`/wikis/${id}`);
 };
 
 export const shareWikiAction = async (formData: FormData) => {

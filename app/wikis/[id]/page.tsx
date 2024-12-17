@@ -81,27 +81,27 @@ export default async function WikiPage(props: WikiPageProps) {
     <div className="max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-8">
       {/* Back Navigation */}
       <div className="mb-8">
-        <BackButton label="Back" />
+        <BackButton label="Back to Wikis" href="/wikis" />
       </div>
 
       {/* Wiki Header */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">{wiki.title}</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">{wiki.title}</h1>
           <div className="flex gap-2">
-            {isOwner && (
-              <ConfirmationDialog
-                title="Delete Wiki"
-                description="Are you sure you want to delete this wiki? This action cannot be undone and will delete all pages within this wiki."
-                action={deleteWikiWithId}
-              />
-            )}
-            <Button asChild size="sm">
-              <Link href={`/wikis/${wikiId}/pages/new`}>
-                <Plus className="h-4 w-4 mr-2" />
-                New Page
-              </Link>
-            </Button>
+          {wiki.user_id === user.id && (
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/wikis/${params.id}/edit`}>
+                  Edit Wiki
+                </Link>
+              </Button> 
+          )}
+          <Button asChild size="sm">
+                <Link href={`/wikis/${wikiId}/pages/new`}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Page
+                </Link>
+              </Button>
           </div>
         </div>
         {wiki.description && (
