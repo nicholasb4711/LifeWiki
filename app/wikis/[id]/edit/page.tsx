@@ -20,6 +20,7 @@ interface EditWikiPageProps {
 
 export default async function EditWikiPage({ params }: EditWikiPageProps) {
   const supabase = await createClient();
+  const wikiId = params.id;
   
   // Check authentication
   const { data: { user } } = await supabase.auth.getUser();
@@ -38,7 +39,7 @@ export default async function EditWikiPage({ params }: EditWikiPageProps) {
         )
       )
     `)
-    .eq("id", params.id)
+    .eq("id", wikiId)
     .single();
 
   // Fetch all existing tags
@@ -63,7 +64,7 @@ export default async function EditWikiPage({ params }: EditWikiPageProps) {
     <div className="max-w-2xl mx-auto w-full">
       <div className="mb-8">
         <Link
-          href={`/wikis/${params.id}`}
+          href={`/wikis/${wikiId}`}
           className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -79,7 +80,7 @@ export default async function EditWikiPage({ params }: EditWikiPageProps) {
           <form action={updateWikiAction} className="space-y-6">
             <FormMessage message={{ success: "", error: "" }} />
             
-            <input type="hidden" name="id" value={params.id} />
+            <input type="hidden" name="id" value={wikiId} />
             
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
@@ -130,7 +131,7 @@ export default async function EditWikiPage({ params }: EditWikiPageProps) {
             <div className="flex gap-4">
               <Button type="submit">Save Changes</Button>
               <Button variant="outline" asChild>
-                <Link href={`/wikis/${params.id}`}>Cancel</Link>
+                <Link href={`/wikis/${wikiId}`}>Cancel</Link>
               </Button>
             </div>
           </form>
