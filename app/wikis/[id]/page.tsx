@@ -88,21 +88,21 @@ export default async function WikiPage(props: WikiPageProps) {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">{wiki.title}</h1>
+          <div className="flex gap-2">
           {wiki.user_id === user.id && (
-            <div className="flex gap-2">
-              <Button asChild>
+              <Button asChild size="sm" variant="outline">
                 <Link href={`/wikis/${params.id}/edit`}>
                   Edit Wiki
                 </Link>
-              </Button>
-              <Button asChild size="sm">
+              </Button> 
+          )}
+          <Button asChild size="sm">
                 <Link href={`/wikis/${wikiId}/pages/new`}>
                   <Plus className="h-4 w-4 mr-2" />
                   New Page
                 </Link>
               </Button>
-            </div>
-          )}
+          </div>
         </div>
         {wiki.description && (
           <p className="text-muted-foreground">{wiki.description}</p>

@@ -249,7 +249,7 @@ export const createPageAction = async (formData: FormData) => {
     .eq("id", wikiId)
     .single();
 
-  if (!wiki || wiki.user_id !== user.id) {
+  if (!wiki) {
     return encodedRedirect(
       "error",
       `/wikis/${wikiId}/pages/new`,
