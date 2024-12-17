@@ -10,7 +10,6 @@ interface PopularPage {
   views: number
   wiki_id: string
   wiki_title: string
-  updated_at: string
   creator?: {
     email: string
   }
@@ -55,9 +54,6 @@ export function PopularPagesDashboard({ pages }: PopularPagesDashboardProps) {
                       {page.creator?.email && (
                         <span className="truncate">Created by {page.creator.email}</span>
                       )}
-                      <span className="truncate">
-                        Last updated: {new Date(page.updated_at).toLocaleDateString()}
-                      </span>
                     </div>
                   </div>
                 </div>
