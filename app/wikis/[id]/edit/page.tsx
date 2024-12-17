@@ -13,14 +13,14 @@ import { FormMessage } from "@/components/ui/form-message";
 import { updateWikiAction } from "@/app/actions";
 
 interface EditWikiPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EditWikiPage({ params }: EditWikiPageProps) {
   const supabase = await createClient();
-  const wikiId = params.id;
+  const { id: wikiId } = await Promise.resolve(params);
   
   // Check authentication
   const { data: { user } } = await supabase.auth.getUser();
