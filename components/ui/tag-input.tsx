@@ -11,6 +11,7 @@ interface TagInputProps {
   placeholder?: string
   defaultValue?: string[]
   onChange?: (tags: string[]) => void
+  suggestions?: string[]
 }
 
 export function TagInput({
@@ -19,25 +20,35 @@ export function TagInput({
   placeholder,
   defaultValue = [],
   onChange,
+  suggestions = [],
 }: TagInputProps) {
   const [tags, setTags] = useState<string[]>(defaultValue)
   const [input, setInput] = useState("")
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
+  const filteredSuggestions = suggestions
+    .filter(s => !tags.includes(s))
+    .filter(s => s.toLowerCase().includes(input.toLowerCase()))
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault()
       addTag()
     }
+    if (e.key === 'Escape') {
+      setShowSuggestions(false)
+    }
   }
 
-  const addTag = () => {
-    const trimmedInput = input.trim()
+  const addTag = (tagToAdd: string = input) => {
+    const trimmedInput = tagToAdd.trim()
     if (trimmedInput && !tags.includes(trimmedInput)) {
       const newTags = [...tags, trimmedInput]
       setTags(newTags)
       onChange?.(newTags)
     }
     setInput("")
+    setShowSuggestions(false)
   }
 
   const removeTag = (tagToRemove: string) => {
@@ -62,15 +73,31 @@ export function TagInput({
           </Badge>
         ))}
       </div>
-      <Input
-        id={id}
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onBlur={addTag}
-        placeholder={placeholder}
-      />
+      <div className="relative">
+        <Input
+          id={id}
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+          placeholder={placeholder}
+        />
+        {showSuggestions && filteredSuggestions.length > 0 && (
+          <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg">
+            {filteredSuggestions.map((suggestion) => (
+              <div
+                key={suggestion}
+                className="px-3 py-2 hover:bg-accent cursor-pointer"
+                onClick={() => addTag(suggestion)}
+              >
+                {suggestion}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       <input
         type="hidden"
         name={name}
