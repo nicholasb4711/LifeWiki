@@ -432,27 +432,20 @@ export const deletePageAction = async (formData: FormData) => {
     );
   }
 
-  // Verify user owns the wiki
-  const { data: wiki } = await supabase
-    .from("wikis")
-    .select("user_id")
-    .eq("id", wikiId)
+  // Verify user owns the page
+  const { data: page } = await supabase
+    .from("pages")
+    .select("created_by, title")
+    .eq("id", pageId)
     .single();
 
-  if (!wiki || wiki.user_id !== user.id) {
+  if (!page || page.created_by !== user.id) {
     return encodedRedirect(
       "error",
       `/wikis/${wikiId}/pages/${pageId}`,
       "You don't have permission to delete this page"
     );
   }
-
-  // Get page title before deletion
-  const { data: page } = await supabase
-    .from("pages")
-    .select("title")
-    .eq("id", pageId)
-    .single();
 
   // Track activity before deletion
   await trackActivity('delete_page', 'page', pageId, { title: page?.title });

@@ -81,7 +81,7 @@ export default async function WikiPage(props: WikiPageProps) {
     <div className="max-w-5xl mx-auto w-full p-4 sm:p-6 space-y-8">
       {/* Back Navigation */}
       <div className="mb-8">
-        <BackButton label="Back" />
+        <BackButton label="Back to Wikis" href="/wikis" />
       </div>
 
       {/* Wiki Header */}

@@ -52,7 +52,7 @@ export default async function EditPage(props: EditPageProps) {
   return (
     <div className="max-w-4xl mx-auto w-full p-4 sm:p-6 space-y-8">
       <div className="flex items-center justify-between">
-        <BackButton label={`Back to ${page.title}`} />
+        <BackButton href={`/wikis/${params.id}/pages/${params.pageId}`} />
       </div>
 
       <Card className="shadow-sm">

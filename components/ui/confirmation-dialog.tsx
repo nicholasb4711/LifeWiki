@@ -17,12 +17,13 @@ import { Trash2 } from "lucide-react"
 interface ConfirmationDialogProps {
   title: string
   description?: string
-  action: () => void
+  action: () => Promise<any>
   variant?: "default" | "destructive"
   triggerText?: string
   actionText?: string
   cancelText?: string
   icon?: React.ReactNode
+  trigger: React.ReactElement
 }
 
 export function ConfirmationDialog({
@@ -33,7 +34,8 @@ export function ConfirmationDialog({
   triggerText = "Delete",
   actionText = "Delete",
   cancelText = "Cancel",
-  icon = <Trash2 className="h-4 w-4 mr-2" />
+  icon = <Trash2 className="h-4 w-4 mr-2" />,
+  trigger
 }: ConfirmationDialogProps) {
   return (
     <AlertDialog>
