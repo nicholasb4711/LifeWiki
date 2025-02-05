@@ -30,8 +30,12 @@ interface MyWikisPageProps {
 }
 
 interface TagData {
-  tag: { name: string }[];
-  wiki: { user_id: string }[];
+  tag: {
+    name: string;
+  }[];  // Array because of the join
+  wiki: {
+    user_id: string;
+  }[];  // Array because of the join
 }
 
 export default async function MyWikisPage({ searchParams }: MyWikisPageProps) {
@@ -111,10 +115,12 @@ export default async function MyWikisPage({ searchParams }: MyWikisPageProps) {
     `)
     .eq('wiki.user_id', user.id);
 
-  // Count tags in JavaScript
-  const tagCounts = tagData?.reduce<Record<string, number>>((acc, tag: TagData) => {
-    const name = tag.tag[0].name;
-    acc[name] = (acc[name] || 0) + 1;
+  // Update reduce function to handle potential undefined values
+  const tagCounts = tagData?.reduce<Record<string, number>>((acc, tag) => {
+    const name = tag?.tag?.[0]?.name;
+    if (name) {  // Only count if name exists
+      acc[name] = (acc[name] || 0) + 1;
+    }
     return acc;
   }, {});
 
