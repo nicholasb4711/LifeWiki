@@ -30,8 +30,12 @@ interface MyWikisPageProps {
 }
 
 interface TagData {
-  tag: { name: string }[];
-  wiki: { user_id: string }[];
+  tag: {
+    name: string;
+  };
+  wiki: {
+    user_id: string;
+  };
 }
 
 export default async function MyWikisPage({ searchParams }: MyWikisPageProps) {
@@ -113,7 +117,7 @@ export default async function MyWikisPage({ searchParams }: MyWikisPageProps) {
 
   // Count tags in JavaScript
   const tagCounts = tagData?.reduce<Record<string, number>>((acc, tag: TagData) => {
-    const name = tag.tag[0].name;
+    const name = tag.tag.name;
     acc[name] = (acc[name] || 0) + 1;
     return acc;
   }, {});
